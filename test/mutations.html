@@ -30,9 +30,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+  <test-fixture id="trivialListPrimitiveItem">
+    <template>
+      <x-list item-prop=""></x-list>
+    </template>
+  </test-fixture>
+
   <script>
 
-    suite('mutations to items', function() {
+    suite('mutations to the collection of items', function() {
       var list, container;
 
       setup(function() {
@@ -74,7 +80,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
 
         flush(function() {
-          var rowHeight = list._physicalItems[0].offsetHeight;
+          var rowHeight = getFirstItemFromList(list).offsetHeight;
           // scroll down
           simulateScroll({
             list: list,
@@ -115,12 +121,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         })
       });
 
+      test('push and scroll to bottom', function(done) {
+        list.items = [buildItem(0)];
+
+        flush(function() {
+          var rowHeight = getFirstItemFromList(list).offsetHeight;
+          var viewportHeight = list.offsetHeight;
+          var itemsPerViewport = Math.floor(viewportHeight/rowHeight);
+
+          while (list.items.length < 200) {
+            list.push('items', buildItem(list.items.length));
+          }
+
+          list.scrollToIndex(list.items.length - 1);
+          assert.isTrue(isFullOfItems(list));
+          assert.equal(getFirstItemFromList(list).textContent.trim(),
+              list.items.length - itemsPerViewport);
+          done();
+        });
+      });
+
       test('pop', function(done) {
         var setSize = 100;
         list.items = buildDataSet(setSize);
 
         flush(function() {
-          var rowHeight = list._physicalItems[0].offsetHeight;
+          var rowHeight = getFirstItemFromList(list).offsetHeight;
 
           simulateScroll({
             list: list,
@@ -167,8 +193,48 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           assert.isTrue(/^[0-9]*$/.test(getFirstItemFromList(list).textContent));
         }
       });
-
     });
+
+    suite('mutations of primitive type items', function() {
+      var container, list;
+
+      setup(function() {
+        container = fixture('trivialListPrimitiveItem');
+        list = container.list;
+
+      });
+
+      test('push item = polymer', function(done) {
+        list.items = [];
+        list.push('items', 'polymer');
+
+        flush(function() {
+         assert.equal(getFirstItemFromList(list).textContent, 'polymer');
+         done();
+        })
+      });
+
+      test('push item = 0', function(done) {
+        list.items = [];
+        list.push('items', 0);
+
+        flush(function() {
+          assert.equal(getFirstItemFromList(list).textContent, '0');
+          done();
+        })
+      });
+
+      test('push item = false', function(done) {
+        list.items = [];
+        list.push('items', false);
+
+        flush(function() {
+          assert.equal(getFirstItemFromList(list).textContent, 'false');
+          done();
+        })
+      });
+    });
+
   </script>
 
 </body>

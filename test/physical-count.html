@@ -38,7 +38,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
-
   <script>
 
     suite('dynamic physical count', function() {
@@ -52,13 +51,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       test('increase pool size', function(done) {
         setTimeout(function() {
+          list.scrollTop = 0;
+
           var lastItem = getLastItemFromList(list);
           var lastItemHeight = lastItem.offsetHeight;
-          var expectedFinalItem = container.listHeight/lastItemHeight;
-          
+          var expectedFinalItem = container.listHeight/lastItemHeight - 1;
+
           assert.equal(list.offsetHeight, container.listHeight);
           assert.equal(lastItemHeight, 2);
-          assert.equal(getLastItemFromList(list).textContent, expectedFinalItem);
+          assert.isTrue(isFullOfItems(list));
+          assert.equal(lastItem.textContent, expectedFinalItem);
           done();
         }, 100);
       });
@@ -66,13 +68,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     suite('iron-resize', function() {
       var list, container;
-
       setup(function() {
         container = fixture('trivialListSmall');
         list = container.list;
         list.items = buildDataSet(200);
       });
-
       test('increase pool size after resizing the list', function(done) {
         flush(function() {
           list.fire('iron-resize');
@@ -80,7 +80,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             var lastItem = getLastItemFromList(list);
             var lastItemHeight = lastItem.offsetHeight;
             var expectedFinalItem = container.listHeight/lastItemHeight;
-            
+
             assert.equal(list.offsetHeight, container.listHeight);
             assert.equal(lastItemHeight, 2);
             assert.equal(getLastItemFromList(list).textContent, expectedFinalItem);
@@ -89,6 +89,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
       });
     });
+
   </script>
 
 </body>
